@@ -1,6 +1,12 @@
 import { argon2Sync } from 'node:crypto';
-import { setUser } from './config';
-import { createUser, getUserByName } from './lib/db/queries/users';
+import { readConfig, setUser } from './config';
+import {
+  createUser,
+  deleteAllUser,
+  getUserByName,
+  getUsers,
+} from './lib/db/queries/users';
+import { resourceLimits } from 'node:worker_threads';
 
 export type CommandHandler = (
   cmdName: string,
@@ -44,6 +50,36 @@ export async function handlerRegister(
   const result = await createUser(name);
   setUser(name);
   console.log(`User "${name}" was added.\n${JSON.stringify(result, null, 2)}`);
+}
+
+// > reset -> resets user table rows
+export async function handlerReset(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  try {
+    await deleteAllUser();
+    console.log('Exit Code: 0, Users table reset');
+  } catch {
+    console.log('Exit Code: 1, Issue resetting users table');
+  }
+}
+
+export async function handlerUsers(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  const results = await getUsers();
+  const currentUser = readConfig().currentUserName;
+  for (const result of results) {
+    let _name = result.name;
+
+    if (_name == currentUser) {
+      console.log(`* ${_name} (current)`);
+    } else {
+      console.log(`* ${_name}`);
+    }
+  }
 }
 
 export function registerCommand(
