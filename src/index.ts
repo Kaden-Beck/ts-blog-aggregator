@@ -1,9 +1,21 @@
-import { readConfig, setUser } from './config';
+import {
+  handlerLogin,
+  registerCommand,
+  runCommand,
+  type CommandsRegistry,
+} from './commands';
 
 function main() {
-  setUser('Kaden');
+  const registry: CommandsRegistry = {};
+  registerCommand(registry, 'login', handlerLogin);
 
-  console.log(readConfig())
+  const [cmdName, ...args] = process.argv.slice(2);
+
+  if (!cmdName) {
+    throw new Error('No command provided');
+  }
+
+  runCommand(registry, cmdName, ...args);
 }
 
 main();
