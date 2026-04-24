@@ -71,12 +71,12 @@ function writeConfig(config: Config): void {
 }
 
 export function setUser(userName: string): void {
-  const config: Config = {
-    dbUrl: 'postgres://example',
+  let existing: Partial<Config> = {};
+  try { existing = readConfig(); } catch {}
+  writeConfig({
+    dbUrl: existing.dbUrl ?? 'postgres://postgres:postgres@localhost:5433/gator?sslmode=disable',
     currentUserName: userName,
-  };
-
-  writeConfig(config);
+  });
 }
 
 export function readConfig(): Config {
