@@ -5,7 +5,7 @@ import {
   type CommandsRegistry,
 } from './commands';
 
-function main() {
+async function main() {
   const registry: CommandsRegistry = {};
   registerCommand(registry, 'login', handlerLogin);
 
@@ -15,7 +15,8 @@ function main() {
     throw new Error('No command provided');
   }
 
-  runCommand(registry, cmdName, ...args);
+  await runCommand(registry, cmdName, ...args);
+  process.exit(0);
 }
 
 main();

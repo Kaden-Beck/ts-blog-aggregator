@@ -1,21 +1,22 @@
 import { setUser } from './config';
 
-export type CommandHandler = (cmdName: string, ...args: string[]) => void;
+export type CommandHandler = (
+  cmdName: string,
+  ...args: string[]
+) => Promise<void>;
 
 export type CommandsRegistry = Record<string, CommandHandler>;
 
-/*
-  npm run start login <username> -> sets the user in config file to <username>
-*/
-
-export function handlerLogin(cmdName: string, ...args: string[]): void {
+// npm run start login <username> -> sets the user in config file to <username>
+export async function handlerLogin(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
   if (args.length === 0) {
     throw new Error(`${cmdName} command expects a username argument`);
   }
-
   const username = args[0].trim();
   setUser(username);
-
   console.log(`User set to ${username}`);
 }
 
@@ -27,11 +28,11 @@ export function registerCommand(
   registry[cmdName] = handler;
 }
 
-export function runCommand(
+export async function runCommand(
   registry: CommandsRegistry,
   cmdName: string,
   ...args: string[]
-): void {
+): Promise<void> {
   const cleanName = cmdName.trim();
   const command = registry[cleanName];
 
@@ -39,5 +40,5 @@ export function runCommand(
     throw new Error(`Unknown command: ${cleanName}`);
   }
 
-  command(cleanName, ...args);
+  await command(cleanName, ...args);
 }
