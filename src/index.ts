@@ -1,4 +1,5 @@
 import {
+  handlerRegister,
   handlerLogin,
   registerCommand,
   runCommand,
@@ -8,6 +9,7 @@ import {
 async function main() {
   const registry: CommandsRegistry = {};
   registerCommand(registry, 'login', handlerLogin);
+  registerCommand(registry, 'register', handlerRegister)
 
   const [cmdName, ...args] = process.argv.slice(2);
 

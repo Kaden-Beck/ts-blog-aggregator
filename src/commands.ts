@@ -1,4 +1,6 @@
+import { argon2Sync } from 'node:crypto';
 import { setUser } from './config';
+import { createUser, getUserByName } from './lib/db/queries/users';
 
 export type CommandHandler = (
   cmdName: string,
@@ -7,7 +9,7 @@ export type CommandHandler = (
 
 export type CommandsRegistry = Record<string, CommandHandler>;
 
-// npm run start login <username> -> sets the user in config file to <username>
+// > start login {username} -> sets the user in config file to {username}
 export async function handlerLogin(
   cmdName: string,
   ...args: string[]
@@ -16,8 +18,32 @@ export async function handlerLogin(
     throw new Error(`${cmdName} command expects a username argument`);
   }
   const username = args[0].trim();
-  setUser(username);
-  console.log(`User set to ${username}`);
+
+  if ((await getUserByName(username)) == null) {
+    throw new Error('User cannot login to an account that does not exist!');
+  } else {
+    setUser(username);
+    console.log(`User set to ${username}`);
+  }
+}
+
+// > register {name} -> createUser(name) => result
+export async function handlerRegister(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  if (args.length === 0) {
+    throw new Error(`${cmdName} command expects a name argument`);
+  }
+  const name = args[0].trim();
+
+  if ((await getUserByName(name)) != null) {
+    throw Error('A user with that name already exists');
+  }
+
+  const result = await createUser(name);
+  setUser(name);
+  console.log(`User "${name}" was added.\n${JSON.stringify(result, null, 2)}`);
 }
 
 export function registerCommand(
