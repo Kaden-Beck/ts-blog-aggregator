@@ -7,6 +7,7 @@ import {
   getUsers,
 } from './lib/db/queries/users';
 import { resourceLimits } from 'node:worker_threads';
+import { fetchRSSFeed, parseXML, RSSFeed } from './rss';
 
 export type CommandHandler = (
   cmdName: string,
@@ -65,6 +66,7 @@ export async function handlerReset(
   }
 }
 
+// > users -> prints a list of users
 export async function handlerUsers(
   cmdName: string,
   ...args: string[]
@@ -80,6 +82,16 @@ export async function handlerUsers(
       console.log(`* ${_name}`);
     }
   }
+}
+
+export async function handlerAgg(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  const rawXML = await fetchRSSFeed('https://www.wagslane.dev/index.xml');
+  const parsedXML: RSSFeed = parseXML(rawXML);
+
+  console.log(JSON.stringify(parsedXML, null, 2));
 }
 
 export function registerCommand(

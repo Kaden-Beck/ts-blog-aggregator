@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { isRecord } from './lib/utils';
 
 export type Config = {
   dbUrl: string;
@@ -13,10 +14,6 @@ function getConfigFilePath(): string {
 
 function getFallbackConfigFilePath(): string {
   return join(process.cwd(), '.gatorconfig.json');
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function isConfig(value: unknown): value is Config {

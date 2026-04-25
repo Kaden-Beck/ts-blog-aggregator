@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsx ./src/index.ts", 
-    "generate": "drizzle-kit generate", 
+    "start": "tsx ./src/index.ts",
+    "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate"
   },
   "repository": {
@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
+    "fast-xml-parser": "^5.7.1",
     "postgres": "^3.4.9"
   }
 }
