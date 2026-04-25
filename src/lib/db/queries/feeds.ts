@@ -9,10 +9,7 @@ function isRSSFeed(feedData: FeedInput): feedData is RSSFeed {
   return 'channel' in feedData;
 }
 
-export async function createFeed(
-  feedData: FeedInput,
-  user: SelectUser,
-) {
+export async function createFeed(feedData: FeedInput, user: SelectUser) {
   const name = isRSSFeed(feedData) ? feedData.channel.title : feedData.name;
   const url = isRSSFeed(feedData) ? feedData.channel.link : feedData.url;
 

@@ -4,7 +4,7 @@ CREATE TABLE "feeds" (
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"name" text NOT NULL,
 	"url" text NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	CONSTRAINT "feeds_url_unique" UNIQUE("url")
 );
 --> statement-breakpoint
