@@ -3,11 +3,14 @@ import { readConfig, setUser } from './config';
 import {
   createUser,
   deleteAllUser,
+  getCurrentUser,
   getUserByName,
   getUsers,
 } from './lib/db/queries/users';
 import { resourceLimits } from 'node:worker_threads';
 import { fetchRSSFeed, parseXML, RSSFeed } from './rss';
+import { SelectFeed, SelectUser } from './lib/utils';
+import { createFeed } from './lib/db/queries/feeds';
 
 export type CommandHandler = (
   cmdName: string,
@@ -92,6 +95,28 @@ export async function handlerAgg(
   const parsedXML: RSSFeed = parseXML(rawXML);
 
   console.log(JSON.stringify(parsedXML, null, 2));
+}
+
+function printFeed(feed: SelectFeed, user: SelectUser) {
+  console.log(`${JSON.stringify(feed, null, 2)}`);
+  console.log(`${JSON.stringify(user, null, 2)}`);
+}
+
+export async function handlerFeed(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  if (args.length !== 2) {
+    throw new Error(`${cmdName} command expects name and url arguments`);
+  }
+
+  const name = args[0].trim();
+  const url = args[1].trim();
+  const user: SelectUser = await getCurrentUser();
+
+  const result = await createFeed({ name: name, url: url }, user);
+
+  printFeed(result, user);
 }
 
 export function registerCommand(
