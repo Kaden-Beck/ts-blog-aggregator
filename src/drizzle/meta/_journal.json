@@ -8,6 +8,13 @@
       "when": 1777061879945,
       "tag": "0000_demonic_jocasta",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777154065750,
+      "tag": "0001_cooing_slipstream",
+      "breakpoints": true
     }
   ]
 }
