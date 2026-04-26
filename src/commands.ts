@@ -1,6 +1,9 @@
 import { readConfig, setUser } from './config';
 import { getFeedByURL } from './lib/db/queries/feeds';
-import { selectFollowsByUser } from './lib/db/queries/feedFollow';
+import {
+  deleteFeedFollow,
+  selectFollowsByUser,
+} from './lib/db/queries/feedFollow';
 import { getCurrentUser, getUsers } from './lib/db/queries/users';
 
 import { fetchRSSFeed, parseXML, RSSFeed } from './lib/rss';
@@ -31,7 +34,9 @@ export type CommandsRegistry = Record<string, CommandHandler>;
 ~ Standard command functions
 *************************/
 
-export function middlewareLoggedIn(handler: UserCommandHandler): CommandHandler {
+export function middlewareLoggedIn(
+  handler: UserCommandHandler,
+): CommandHandler {
   return async (cmdName: string, ...args: string[]): Promise<void> => {
     const user = await getCurrentUser();
     await handler(cmdName, user, ...args);
@@ -149,7 +154,11 @@ export async function handlerAddFeed(
     throw new Error(`${cmdName} command expects name and url arguments`);
   }
 
-  const result: Feed | null = await addFeed(args[0].trim(), args[1].trim(), user);
+  const result: Feed | null = await addFeed(
+    args[0].trim(),
+    args[1].trim(),
+    user,
+  );
 
   if (result) {
     printFeed(result, user);
@@ -203,5 +212,22 @@ export async function handlerFollowing(
   for (const feed of result.feedData) {
     i++;
     console.log(`  ${i}. ${feed.name} - (${feed.url})`);
+  }
+}
+
+// Handle deleting a follow for current user
+export async function handlerUnfollow(
+  cmdName: string,
+  user: User,
+  ..._args: string[]
+): Promise<void> {
+  if (_args.length === 0) {
+    console.error(`Missing the feed URL for ${cmdName}`);
+    return;
+  }
+
+  const result = await deleteFeedFollow(user, _args[0]);
+  if (result) {
+    console.log(`User ${user.name} succesfully unfollowed ${result[1].name}.`);
   }
 }

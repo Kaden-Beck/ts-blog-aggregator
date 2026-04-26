@@ -1,4 +1,8 @@
-import type { CommandHandler, CommandsRegistry, UserCommandHandler } from './commands';
+import type {
+  CommandHandler,
+  CommandsRegistry,
+  UserCommandHandler,
+} from './commands';
 import {
   handlerRegister,
   handlerLogin,
@@ -11,10 +15,15 @@ import {
   handlerFeeds,
   handlerFollowFeed,
   handlerFollowing,
+  handlerUnfollow,
 } from './commands';
 
 type Commands = Array<
-  [cmdName: string, handler: CommandHandler | UserCommandHandler, authRequired: boolean]
+  [
+    cmdName: string,
+    handler: CommandHandler | UserCommandHandler,
+    authRequired: boolean,
+  ]
 >;
 
 const commands: Commands = [
@@ -27,6 +36,7 @@ const commands: Commands = [
   ['feeds', handlerFeeds, false],
   ['follow', handlerFollowFeed, true],
   ['following', handlerFollowing, true],
+  ['unfollow', handlerUnfollow, true],
 ];
 
 function buildCommandRegistry(commands: Commands): CommandsRegistry {

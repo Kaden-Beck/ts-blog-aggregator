@@ -4,6 +4,7 @@ import { User } from '../../user';
 import { feedFollows, feeds, users } from '../schema/schema';
 import { and, eq } from 'drizzle-orm';
 import { getFeedByURL } from './feeds';
+import { Feed } from '../../feed';
 
 export interface FeedFollowerJoin {
   id: string;
@@ -59,15 +60,18 @@ export async function selectFollowsByUser(user: User) {
 export async function deleteFeedFollow(
   user: User,
   feedUrl: string,
-): Promise<void> {
-  const feed = await getFeedByURL(feedUrl);
+): Promise<[FeedFollow, Feed] | void> {
+  const feed: Feed | undefined = await getFeedByURL(feedUrl);
   if (!feed) {
     return;
   }
 
-  await db
+  const [result]: FeedFollow[] = await db
     .delete(feedFollows)
     .where(
       and(eq(feedFollows.userId, user.id), eq(feedFollows.feedId, feed.id)),
-    );
+    )
+    .returning();
+
+  return [result, feed];
 }
