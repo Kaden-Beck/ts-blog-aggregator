@@ -8,7 +8,8 @@ import {
   handlerReset,
   handlerUsers,
   handlerAgg,
-  handlerFeed,
+  handlerAddFeed,
+  handlerFeeds,
 } from './commands';
 
 const commands: Array<[cmdName: string, handler: CommandHandler]> = [
@@ -17,7 +18,8 @@ const commands: Array<[cmdName: string, handler: CommandHandler]> = [
   ['reset', handlerReset],
   ['users', handlerUsers],
   ['agg', handlerAgg],
-  ['addfeed', handlerFeed],
+  ['addfeed', handlerAddFeed],
+  ['feeds', handlerFeeds]
 ];
 
 const command: { registry: any }[] = [];

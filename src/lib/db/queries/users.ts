@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { db } from '..';
 import { users } from '../schema/schema';
-import { SelectUser } from '../../utils';
+
 import { readConfig } from '../../../config';
+import { SelectUser } from '../../../user';
 
 export async function createUser(name: string) {
   const [result] = await db.insert(users).values({ name: name }).returning();
@@ -11,6 +12,11 @@ export async function createUser(name: string) {
 
 export async function getUserByName(name: string): Promise<SelectUser> {
   const [result] = await db.select().from(users).where(eq(users.name, name));
+  return result;
+}
+
+export async function getUserById(id: string): Promise<SelectUser> {
+  const [result] = await db.select().from(users).where(eq(users.id, id));
   return result;
 }
 
@@ -24,6 +30,6 @@ export async function getUsers(): Promise<SelectUser[]> {
   return result;
 }
 
-export async function deleteAllUser(): Promise<void> {
+export async function deleteAllUsers(): Promise<void> {
   await db.delete(users);
 }

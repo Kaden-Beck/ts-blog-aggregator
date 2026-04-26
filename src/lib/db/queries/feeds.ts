@@ -1,17 +1,16 @@
 import { db } from '..';
-import { feeds } from '../schema/schema';
-import { SelectUser } from '../../utils';
+import { feeds, users } from '../schema/schema';
 import { RSSFeed } from '../../../rss';
+import { SelectFeed } from '../../../feeds';
+import { SelectUser } from '../../../user';
+import { eq } from 'drizzle-orm';
 
-type FeedInput = RSSFeed | { name: string; url: string };
-
-function isRSSFeed(feedData: FeedInput): feedData is RSSFeed {
-  return 'channel' in feedData;
-}
-
-export async function createFeed(feedData: FeedInput, user: SelectUser) {
-  const name = isRSSFeed(feedData) ? feedData.channel.title : feedData.name;
-  const url = isRSSFeed(feedData) ? feedData.channel.link : feedData.url;
+export async function createFeed(
+  feedData: RSSFeed | { name: string; url: string },
+  user: SelectUser,
+): Promise<SelectFeed> {
+  const name = 'channel' in feedData ? feedData.channel.title : feedData.name;
+  const url = 'channel' in feedData ? feedData.channel.link : feedData.url;
 
   const [result] = await db
     .insert(feeds)
@@ -22,5 +21,13 @@ export async function createFeed(feedData: FeedInput, user: SelectUser) {
     })
     .returning();
 
+  return result;
+}
+
+export async function getFeeds_Users() {
+  const result = await db
+    .select()
+    .from(feeds)
+    .leftJoin(users, eq(feeds.userId, users.id));
   return result;
 }

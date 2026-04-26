@@ -1,16 +1,8 @@
-import { argon2Sync } from 'node:crypto';
 import { readConfig, setUser } from './config';
-import {
-  createUser,
-  deleteAllUser,
-  getCurrentUser,
-  getUserByName,
-  getUsers,
-} from './lib/db/queries/users';
-import { resourceLimits } from 'node:worker_threads';
+import { getCurrentUser, getUsers } from './lib/db/queries/users';
 import { fetchRSSFeed, parseXML, RSSFeed } from './rss';
-import { SelectFeed, SelectUser } from './lib/utils';
-import { createFeed } from './lib/db/queries/feeds';
+import { addFeed, printFeed, printFeeds, SelectFeed } from './feeds';
+import { clearUsers, loginUser, registerUser, SelectUser } from './user';
 
 export type CommandHandler = (
   cmdName: string,
@@ -24,17 +16,14 @@ export async function handlerLogin(
   cmdName: string,
   ...args: string[]
 ): Promise<void> {
+  // Handle Argument Count
   if (args.length === 0) {
     throw new Error(`${cmdName} command expects a username argument`);
   }
-  const username = args[0].trim();
 
-  if ((await getUserByName(username)) == null) {
-    throw new Error('User cannot login to an account that does not exist!');
-  } else {
-    setUser(username);
-    console.log(`User set to ${username}`);
-  }
+  const result = await loginUser(args[0].trim());
+  // Log Result
+  console.log(`User set to ${result.name}`);
 }
 
 // > register {name} -> createUser(name) => result
@@ -45,15 +34,14 @@ export async function handlerRegister(
   if (args.length === 0) {
     throw new Error(`${cmdName} command expects a name argument`);
   }
-  const name = args[0].trim();
+  const username = args[0].trim();
+  const result = await registerUser(username);
 
-  if ((await getUserByName(name)) != null) {
-    throw Error('A user with that name already exists');
-  }
+  setUser(username);
 
-  const result = await createUser(name);
-  setUser(name);
-  console.log(`User "${name}" was added.\n${JSON.stringify(result, null, 2)}`);
+  console.log(
+    `User "${username}" was added.\n${JSON.stringify(result, null, 2)}`,
+  );
 }
 
 // > reset -> resets user table rows
@@ -61,14 +49,8 @@ export async function handlerReset(
   cmdName: string,
   ...args: string[]
 ): Promise<void> {
-  try {
-    await deleteAllUser();
-    console.log('Exit Code: 0, Users table reset');
-  } catch {
-    console.log('Exit Code: 1, Issue resetting users table');
-  }
+  await clearUsers();
 }
-
 // > users -> prints a list of users
 export async function handlerUsers(
   cmdName: string,
@@ -76,6 +58,7 @@ export async function handlerUsers(
 ): Promise<void> {
   const results = await getUsers();
   const currentUser = readConfig().currentUserName;
+
   for (const result of results) {
     let _name = result.name;
 
@@ -86,7 +69,7 @@ export async function handlerUsers(
     }
   }
 }
-
+// > agg {url} -> Aggregates a blog and prints to console
 export async function handlerAgg(
   cmdName: string,
   ...args: string[]
@@ -96,27 +79,36 @@ export async function handlerAgg(
 
   console.log(JSON.stringify(parsedXML, null, 2));
 }
-
-function printFeed(feed: SelectFeed, user: SelectUser) {
-  console.log(`${JSON.stringify(feed, null, 2)}`);
-  console.log(`${JSON.stringify(user, null, 2)}`);
-}
-
-export async function handlerFeed(
+// Adds a feed to db with current user
+export async function handlerAddFeed(
   cmdName: string,
   ...args: string[]
 ): Promise<void> {
   if (args.length !== 2) {
     throw new Error(`${cmdName} command expects name and url arguments`);
   }
+  const currrentUser: SelectUser = await getCurrentUser();
 
-  const name = args[0].trim();
-  const url = args[1].trim();
-  const user: SelectUser = await getCurrentUser();
+  const result: SelectFeed = await addFeed(
+    args[0].trim(),
+    args[1].trim(),
+    currrentUser,
+  );
 
-  const result = await createFeed({ name: name, url: url }, user);
+  printFeed(result, currrentUser);
+}
 
-  printFeed(result, user);
+export async function handlerFeeds(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  try {
+    await printFeeds();
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
+  }
 }
 
 export function registerCommand(
