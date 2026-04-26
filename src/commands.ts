@@ -1,8 +1,11 @@
 import { readConfig, setUser } from './config';
 import { getCurrentUser, getUsers } from './lib/db/queries/users';
-import { fetchRSSFeed, parseXML, RSSFeed } from './rss';
-import { addFeed, printFeed, printFeeds, SelectFeed } from './feeds';
-import { clearUsers, loginUser, registerUser, SelectUser } from './user';
+import { fetchRSSFeed, parseXML, RSSFeed } from './lib/rss';
+import { addFeed, printFeed, printFeeds, SelectFeed } from './lib/feeds';
+import { clearUsers, loginUser, registerUser, SelectUser } from './lib/user';
+import { createFeedFollow } from './lib/feedFollower';
+import { createFeed, getFeedByURL } from './lib/db/queries/feeds';
+import { selectFollowsByUser } from './lib/db/queries/feedFollow';
 
 export type CommandHandler = (
   cmdName: string,
@@ -97,7 +100,7 @@ export async function handlerAddFeed(
 
   printFeed(result, currrentUser);
 }
-
+//
 export async function handlerFeeds(
   cmdName: string,
   ...args: string[]
@@ -108,6 +111,38 @@ export async function handlerFeeds(
     if (err instanceof Error) {
       console.error(err.message);
     }
+  }
+}
+//
+export async function handlerFollowFeed(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  if (args.length === 0) {
+    throw new Error(`${cmdName} command expects a url argument`);
+  }
+
+  const currentUser = await getCurrentUser();
+  const feed = await getFeedByURL(args[0].trim());
+  if (currentUser && feed) {
+    await createFeedFollow(feed, currentUser);
+  } else {
+    console.log('There was an unknown error while following that feed!');
+  }
+}
+
+export async function handlerFollowing(
+  cmdName: string,
+  ...args: string[]
+): Promise<void> {
+  const currentUser = await getCurrentUser();
+  const result = await selectFollowsByUser(currentUser);
+
+  console.log(`${currentUser.name} Follows:`);
+  let i = 0;
+  for (const feed of result.feedData) {
+    i++;
+    console.log(`  ${i}. ${feed.name} - (${feed.url})`);
   }
 }
 

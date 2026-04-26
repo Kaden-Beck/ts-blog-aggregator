@@ -10,6 +10,8 @@ import {
   handlerAgg,
   handlerAddFeed,
   handlerFeeds,
+  handlerFollowFeed,
+  handlerFollowing,
 } from './commands';
 
 const commands: Array<[cmdName: string, handler: CommandHandler]> = [
@@ -19,7 +21,9 @@ const commands: Array<[cmdName: string, handler: CommandHandler]> = [
   ['users', handlerUsers],
   ['agg', handlerAgg],
   ['addfeed', handlerAddFeed],
-  ['feeds', handlerFeeds]
+  ['feeds', handlerFeeds],
+  ['follow', handlerFollowFeed],
+  ['following', handlerFollowing],
 ];
 
 const command: { registry: any }[] = [];

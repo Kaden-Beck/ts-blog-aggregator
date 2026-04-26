@@ -1,6 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
-import { isRecord } from './lib/utils';
-
+import { isRecord } from './utils';
 
 /* ***************
  TYPES
@@ -115,4 +114,3 @@ export function parseXML(xmlString: string): RSSFeed {
 
   return rssFeed;
 }
-

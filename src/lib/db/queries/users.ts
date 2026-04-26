@@ -3,7 +3,7 @@ import { db } from '..';
 import { users } from '../schema/schema';
 
 import { readConfig } from '../../../config';
-import { SelectUser } from '../../../user';
+import { SelectUser } from '../../user';
 
 export async function createUser(name: string) {
   const [result] = await db.insert(users).values({ name: name }).returning();

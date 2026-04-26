@@ -1,14 +1,15 @@
-import type { InferSelectModel } from 'drizzle-orm';
-import { users } from './lib/db/schema/schema';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { users } from './db/schema/schema';
 import {
   createUser,
   deleteAllUsers,
   getUserByName,
-} from './lib/db/queries/users';
-import { setUser } from './config';
+} from './db/queries/users';
+import { setUser } from '../config';
 
 // Infered Drizzle Types
 export type SelectUser = InferSelectModel<typeof users>;
+export type InsertUser = InferInsertModel<typeof users>;
 
 export async function loginUser(username: string): Promise<SelectUser> {
   const result: SelectUser = await getUserByName(username);

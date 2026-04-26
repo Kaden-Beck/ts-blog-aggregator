@@ -27,7 +27,7 @@ export const feeds = pgTable('feeds', {
 });
 
 // Feed_Followers joining table
-export const FeedFollowers = pgTable(
+export const feedFollows = pgTable(
   'feed_followers',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),

@@ -1,7 +1,9 @@
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { feeds } from './lib/db/schema/schema';
+import { feeds } from './db/schema/schema';
+import { createFeed, getFeedsUsers } from './db/queries/feeds';
 import { SelectUser } from './user';
-import { createFeed, getFeeds_Users } from './lib/db/queries/feeds';
+import { createFeedFollow } from './feedFollower';
+import { getCurrentUser } from './db/queries/users';
 
 // Infered Drizzle Types
 export type SelectFeed = InferSelectModel<typeof feeds>;
@@ -17,11 +19,22 @@ export async function addFeed(
   url: string,
   currrentUser: SelectUser,
 ) {
-  return await createFeed({ name: name, url: url }, currrentUser);
+  const feed: SelectFeed = await createFeed(
+    { name: name, url: url },
+    currrentUser,
+  );
+
+  const user: SelectUser = await getCurrentUser();
+
+  const result = await createFeedFollow(feed, user);
+  if (result) {
+    console.log(`${user} subscribed to ${result.feedName}`);
+  }
+  return feed;
 }
 
 export async function printFeeds(): Promise<void> {
-  const feeds = await getFeeds_Users();
+  const feeds = await getFeedsUsers();
 
   for (const feed of feeds) {
     console.log(
