@@ -15,6 +15,13 @@
       "when": 1777154065750,
       "tag": "0001_cooing_slipstream",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777164020703,
+      "tag": "0002_amazing_ironclad",
+      "breakpoints": true
     }
   ]
 }
