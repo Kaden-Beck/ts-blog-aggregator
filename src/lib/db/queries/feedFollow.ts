@@ -2,7 +2,8 @@ import { db } from '..';
 import { FeedFollow } from '../../feedFollower';
 import { User } from '../../user';
 import { feedFollows, feeds, users } from '../schema/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { getFeedByURL } from './feeds';
 
 export interface FeedFollowerJoin {
   id: string;
@@ -53,4 +54,20 @@ export async function selectFollowsByUser(user: User) {
     .where(eq(feedFollows.userId, user.id));
 
   return { username: user.name, feedData };
+}
+
+export async function deleteFeedFollow(
+  user: User,
+  feedUrl: string,
+): Promise<void> {
+  const feed = await getFeedByURL(feedUrl);
+  if (!feed) {
+    return;
+  }
+
+  await db
+    .delete(feedFollows)
+    .where(
+      and(eq(feedFollows.userId, user.id), eq(feedFollows.feedId, feed.id)),
+    );
 }
