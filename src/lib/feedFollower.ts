@@ -1,6 +1,6 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import { SelectFeed } from './feeds';
-import { SelectUser } from './user';
+import { Feed } from './feed';
+import { User } from './user';
 import { feedFollows } from './db/schema/schema';
 import {
   FeedFollowerJoin,
@@ -8,11 +8,14 @@ import {
   selectFeedFollower,
 } from './db/queries/feedFollow';
 
-export type SelectFeedFollow = InferSelectModel<typeof feedFollows>;
+export type FeedFollow = InferSelectModel<typeof feedFollows>;
 
-export async function createFeedFollow(feed: SelectFeed, follower: SelectUser) {
+export async function createFeedFollow(
+  feed: Feed,
+  follower: User,
+): Promise<FeedFollowerJoin | null> {
   try {
-    const feedFollower: SelectFeedFollow = await insertFeedFollow(
+    const feedFollower: FeedFollow = await insertFeedFollow(
       follower.id,
       feed.id,
     );
@@ -27,7 +30,7 @@ export async function createFeedFollow(feed: SelectFeed, follower: SelectUser) {
       console.error(
         `There was an error with attempting to follow that feed: ${err.message}`,
       );
-      throw new Error(err.name);
     }
+    return null;
   }
 }

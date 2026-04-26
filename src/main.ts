@@ -1,5 +1,4 @@
-import type { CommandHandler, CommandsRegistry } from './commands';
-
+import type { CommandHandler, CommandsRegistry, UserCommandHandler } from './commands';
 import {
   handlerRegister,
   handlerLogin,
@@ -14,33 +13,49 @@ import {
   handlerFollowing,
 } from './commands';
 
-const commands: Array<[cmdName: string, handler: CommandHandler]> = [
-  ['login', handlerLogin],
-  ['register', handlerRegister],
-  ['reset', handlerReset],
-  ['users', handlerUsers],
-  ['agg', handlerAgg],
-  ['addfeed', handlerAddFeed],
-  ['feeds', handlerFeeds],
-  ['follow', handlerFollowFeed],
-  ['following', handlerFollowing],
+type Commands = Array<
+  [cmdName: string, handler: CommandHandler | UserCommandHandler, authRequired: boolean]
+>;
+
+const commands: Commands = [
+  ['login', handlerLogin, false],
+  ['register', handlerRegister, false],
+  ['reset', handlerReset, false],
+  ['users', handlerUsers, false],
+  ['agg', handlerAgg, false],
+  ['addfeed', handlerAddFeed, true],
+  ['feeds', handlerFeeds, false],
+  ['follow', handlerFollowFeed, true],
+  ['following', handlerFollowing, true],
 ];
 
-const command: { registry: any }[] = [];
+function buildCommandRegistry(commands: Commands): CommandsRegistry {
+  const commandRegistry: CommandsRegistry = {};
 
-async function main() {
-  const registry: CommandsRegistry = {};
   for (const command of commands) {
-    registerCommand(registry, command[0], command[1]);
+    registerCommand(commandRegistry, command);
   }
 
+  return commandRegistry;
+}
+
+function parseCommand(): [string, ...string[]] {
   const [cmdName, ...args] = process.argv.slice(2);
 
   if (!cmdName) {
     throw new Error('No command provided');
   }
 
-  await runCommand(registry, cmdName, ...args);
+  return [cmdName, ...args];
+}
+
+async function main() {
+  // Generarte the Commands Registry
+  const commandRegistry = buildCommandRegistry(commands);
+  // Parse command args
+  const [cmdName, ...args] = parseCommand();
+  // Attempt to run commands=
+  await runCommand(commandRegistry, cmdName, ...args);
   process.exit(0);
 }
 

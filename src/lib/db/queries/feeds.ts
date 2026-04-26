@@ -1,14 +1,14 @@
 import { db } from '..';
 import { feeds, users } from '../schema/schema';
 import { RSSFeed } from '../../rss';
-import { SelectFeed } from '../../feeds';
-import { SelectUser } from '../../user';
+import { Feed } from '../../feed';
+import { User } from '../../user';
 import { eq } from 'drizzle-orm';
 
 export async function createFeed(
   feedData: RSSFeed | { name: string; url: string },
-  user: SelectUser,
-): Promise<SelectFeed> {
+  user: User,
+): Promise<Feed> {
   const name = 'channel' in feedData ? feedData.channel.title : feedData.name;
   const url = 'channel' in feedData ? feedData.channel.link : feedData.url;
 

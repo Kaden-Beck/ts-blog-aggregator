@@ -42,6 +42,7 @@ function checkMetadata(value: unknown): boolean {
   );
 }
 
+// Check if a given item is a RSSItem Type
 function isRSSItem(value: unknown): value is RSSItem {
   return (
     isRecord(value) &&
@@ -69,7 +70,7 @@ export async function fetchRSSFeed(feedURL: string): Promise<string> {
   return data;
 }
 
-export function getRSSItems(channel: Channel): RSSItem[] {
+function getRSSItems(channel: Channel): RSSItem[] {
   if (!channel.item) {
     return [];
   }
@@ -89,6 +90,7 @@ export function getRSSItems(channel: Channel): RSSItem[] {
   return filteredItems;
 }
 
+// Parse typescript objects from RSS Feed using fast-rss-parsr
 export function parseXML(xmlString: string): RSSFeed {
   const parser = new XMLParser({ processEntities: false, htmlEntities: true });
   const parsedXML = parser.parse(xmlString);
@@ -101,16 +103,15 @@ export function parseXML(xmlString: string): RSSFeed {
   if (!checkMetadata(parsedXML.rss.channel)) {
     throw new Error('Issue parsing channel metadata');
   }
+
   const metadata = parsedXML.rss.channel;
 
-  const rssFeed: RSSFeed = {
+  return {
     channel: {
       title: metadata.title,
       link: metadata.link,
       description: metadata.description,
       item: getRSSItems(parsedXML.rss.channel),
     },
-  };
-
-  return rssFeed;
+  } as RSSFeed;
 }

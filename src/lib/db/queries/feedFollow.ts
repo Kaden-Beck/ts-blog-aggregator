@@ -1,6 +1,6 @@
 import { db } from '..';
-import { SelectFeedFollow } from '../../feedFollower';
-import { SelectUser } from '../../user';
+import { FeedFollow } from '../../feedFollower';
+import { User } from '../../user';
 import { feedFollows, feeds, users } from '../schema/schema';
 import { eq } from 'drizzle-orm';
 
@@ -16,7 +16,7 @@ export interface FeedFollowerJoin {
 export async function insertFeedFollow(
   userId: string,
   feedId: string,
-): Promise<SelectFeedFollow> {
+): Promise<FeedFollow> {
   const [result] = await db
     .insert(feedFollows)
     .values({ userId, feedId })
@@ -45,7 +45,7 @@ export async function selectFeedFollower(
   return result;
 }
 
-export async function selectFollowsByUser(user: SelectUser) {
+export async function selectFollowsByUser(user: User) {
   const feedData: Array<{ id: string; name: string; url: string }> = await db
     .select({ id: feeds.id, name: feeds.name, url: feeds.url })
     .from(feedFollows)
