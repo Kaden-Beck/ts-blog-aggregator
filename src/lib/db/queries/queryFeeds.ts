@@ -24,22 +24,13 @@ export async function createFeed(
   return result;
 }
 
-export async function getFeedByURL(url: string) {
-  try {
-    const [result] = await db
-      .select()
-      .from(feeds)
-      .where(eq(feeds.url, url.trim()));
+export async function getFeedByURL(url: string): Promise<Feed | undefined> {
+  const [result] = await db
+    .select()
+    .from(feeds)
+    .where(eq(feeds.url, url.trim()));
 
-    return result;
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error(
-        `There was an error while retrieving that feed with the URL provided: ${err.name}`,
-      );
-      throw new Error(err.message);
-    }
-  }
+  return result;
 }
 
 export async function getFeedsUsers() {

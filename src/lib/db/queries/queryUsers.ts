@@ -10,12 +10,12 @@ export async function createUser(name: string) {
   return result;
 }
 
-export async function getUserByName(name: string): Promise<User> {
+export async function getUserByName(name: string): Promise<User | undefined> {
   const [result] = await db.select().from(users).where(eq(users.name, name));
   return result;
 }
 
-export async function getUserById(id: string): Promise<User> {
+export async function getUserById(id: string): Promise<User | undefined> {
   const [result] = await db.select().from(users).where(eq(users.id, id));
   return result;
 }

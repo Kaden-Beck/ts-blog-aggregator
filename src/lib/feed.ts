@@ -1,6 +1,6 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { feeds } from './db/schema/schema';
-import { createFeed, getFeedsUsers } from './db/queries/queryFeeds';
+import { createFeed, getFeedByURL, getFeedsUsers } from './db/queries/queryFeeds';
 import type { User } from './user';
 import { createFeedFollow } from './feedFollower';
 import { getCurrentUser } from './db/queries/queryUsers';
@@ -18,22 +18,19 @@ export async function addFeed(
   url: string,
   currrentUser: User,
 ): Promise<Feed | null> {
-  try {
-    const feed: Feed = await createFeed({ name: name, url: url }, currrentUser);
-    const user: User = await getCurrentUser();
-    const result = await createFeedFollow(feed, user);
-    if (result) {
-      console.log(`${user} subscribed to ${result.feedName}`);
-    }
-    return feed;
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error(
-        `There was an error creating that feed, ${err.name}: ${err.message}`,
-      );
-    }
-    return null;
+  const existing = await getFeedByURL(url);
+  if (existing) {
+    console.log(`A feed with that URL already exists: ${existing.name}`);
+    return existing;
   }
+
+  const feed: Feed = await createFeed({ name: name, url: url }, currrentUser);
+  const user: User = await getCurrentUser();
+  const result = await createFeedFollow(feed, user);
+  if (result) {
+    console.log(`${user.name} subscribed to ${result.feedName}`);
+  }
+  return feed;
 }
 
 export async function printFeeds(): Promise<void> {

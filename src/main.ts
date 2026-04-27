@@ -24,25 +24,33 @@ type Commands = Array<
     cmdName: string,
     handler: CommandHandler | UserCommandHandler,
     authRequired: boolean,
+    description: string,
   ]
 >;
 
 const commands: Commands = [
-  ['login', handlerLogin, false],
-  ['register', handlerRegister, false],
-  ['reset', handlerReset, false],
-  ['users', handlerUsers, false],
-  ['agg', handlerAgg, false],
-  ['addfeed', handlerAddFeed, true],
-  ['feeds', handlerFeeds, false],
-  ['follow', handlerFollowFeed, true],
-  ['following', handlerFollowing, true],
-  ['unfollow', handlerUnfollow, true],
-  ['browse', handlerBrowse, true],
+  ['login',     handlerLogin,      false, 'login <username>            — set the active user'],
+  ['register',  handlerRegister,   false, 'register <username>         — create a new user account'],
+  ['reset',     handlerReset,      false, 'reset                       — delete all users (destructive)'],
+  ['users',     handlerUsers,      false, 'users                       — list all registered users'],
+  ['agg',       handlerAgg,        false, 'agg <interval>              — start scraping feeds on an interval (e.g. 1m, 30s)'],
+  ['addfeed',   handlerAddFeed,    true,  'addfeed <name> <url>        — add a new feed and follow it'],
+  ['feeds',     handlerFeeds,      false, 'feeds                       — list all feeds in the database'],
+  ['follow',    handlerFollowFeed, true,  'follow <url>                — follow a feed by URL'],
+  ['following', handlerFollowing,  true,  'following                   — list feeds the current user follows'],
+  ['unfollow',  handlerUnfollow,   true,  'unfollow <url>              — unfollow a feed by URL'],
+  ['browse',    handlerBrowse,     true,  'browse [limit]              — show recent posts from followed feeds (default: 2)'],
 ];
 
 function buildCommandRegistry(commands: Commands): CommandsRegistry {
   const commandRegistry: CommandsRegistry = {};
+
+  commandRegistry['help'] = async () => {
+    console.log('Usage: npm run start <command> [args]\n');
+    for (const [, , , description] of commands) {
+      console.log(`  ${description}`);
+    }
+  };
 
   for (const command of commands) {
     registerCommand(commandRegistry, command);
@@ -52,12 +60,7 @@ function buildCommandRegistry(commands: Commands): CommandsRegistry {
 }
 
 function parseCommand(): [string, ...string[]] {
-  const [cmdName, ...args] = process.argv.slice(2);
-
-  if (!cmdName) {
-    throw new Error('No command provided');
-  }
-
+  const [cmdName = 'help', ...args] = process.argv.slice(2);
   return [cmdName, ...args];
 }
 

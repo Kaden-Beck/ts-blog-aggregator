@@ -19,6 +19,7 @@ export async function createPost(postData: InsertPost) {
       publishedAt: publishedAt ?? undefined,
       feedId: feedId,
     })
+    .onConflictDoNothing()
     .returning();
 
   return result;

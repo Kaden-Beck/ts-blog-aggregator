@@ -30,6 +30,7 @@ export type CommandEntry = [
   cmdName: string,
   handler: CommandHandler | UserCommandHandler,
   authRequired: boolean,
+  description: string,
 ];
 
 export type CommandsRegistry = Record<string, CommandHandler>;
@@ -255,6 +256,20 @@ export async function handlerBrowse(
     limit = Number(_args[0].trim());
   }
 
-  const result = await getPostsForUser
-  (user, limit);
+  const posts = await getPostsForUser(user, limit);
+
+  if (posts.length === 0) {
+    console.log('No posts found. Follow some feeds and run agg first.');
+    return;
+  }
+
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i].posts;
+    console.log(`${i + 1}. ${post.title ?? '(no title)'}`);
+    console.log(`   ${post.url}`);
+    if (post.publishedAt) {
+      console.log(`   Published: ${post.publishedAt.toDateString()}`);
+    }
+    console.log();
+  }
 }
