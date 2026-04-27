@@ -1,10 +1,10 @@
+import type { FeedFollow } from '../../feedFollower';
+import type { User } from '../../user';
+import type { Feed } from '../../feed';
 import { db } from '..';
-import { FeedFollow } from '../../feedFollower';
-import { User } from '../../user';
 import { feedFollows, feeds, users } from '../schema/schema';
 import { and, eq } from 'drizzle-orm';
-import { getFeedByURL } from './feeds';
-import { Feed } from '../../feed';
+import { getFeedByURL } from './queryFeeds';
 
 export interface FeedFollowerJoin {
   id: string;

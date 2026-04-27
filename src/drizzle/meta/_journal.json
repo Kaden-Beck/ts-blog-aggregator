@@ -22,6 +22,13 @@
       "when": 1777164020703,
       "tag": "0002_amazing_ironclad",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777243435767,
+      "tag": "0003_young_lady_ursula",
+      "breakpoints": true
     }
   ]
 }

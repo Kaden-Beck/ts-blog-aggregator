@@ -1,6 +1,10 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { users } from './db/schema/schema';
-import { createUser, deleteAllUsers, getUserByName } from './db/queries/users';
+import {
+  createUser,
+  deleteAllUsers,
+  getUserByName,
+} from './db/queries/queryUsers';
 import { setUser } from '../config';
 
 // Infered Drizzle Type

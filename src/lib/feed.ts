@@ -1,9 +1,9 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { feeds } from './db/schema/schema';
-import { createFeed, getFeedsUsers } from './db/queries/feeds';
-import { User } from './user';
+import { createFeed, getFeedsUsers } from './db/queries/queryFeeds';
+import type { User } from './user';
 import { createFeedFollow } from './feedFollower';
-import { getCurrentUser } from './db/queries/users';
+import { getCurrentUser } from './db/queries/queryUsers';
 
 // Infered Drizzle Types
 export type Feed = InferSelectModel<typeof feeds>;

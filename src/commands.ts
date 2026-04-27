@@ -1,15 +1,17 @@
 import { readConfig, setUser } from './config';
-import { getFeedByURL } from './lib/db/queries/feeds';
+import { getFeedByURL } from './lib/db/queries/queryFeeds';
 import {
   deleteFeedFollow,
   selectFollowsByUser,
-} from './lib/db/queries/feedFollow';
-import { getCurrentUser, getUsers } from './lib/db/queries/users';
+} from './lib/db/queries/queryFeedFollow';
+import { getCurrentUser, getUsers } from './lib/db/queries/queryUsers';
 
-import { fetchRSSFeed, parseXML, RSSFeed } from './lib/rss';
-import { addFeed, printFeed, printFeeds, Feed } from './lib/feed';
-import { clearUsers, loginUser, registerUser, User } from './lib/user';
+import { addFeed, printFeed, printFeeds } from './lib/feed';
+import type { Feed } from './lib/feed';
+import { clearUsers, loginUser, registerUser } from './lib/user';
+import type { User } from './lib/user';
 import { createFeedFollow } from './lib/feedFollower';
+import { parseTimeBetweenReqs } from './lib/aggregate';
 
 export type CommandHandler = (
   cmdName: string,
@@ -138,10 +140,10 @@ export async function handlerAgg(
   cmdName: string,
   ...args: string[]
 ): Promise<void> {
-  const rawXML = await fetchRSSFeed('https://www.wagslane.dev/index.xml');
-  const parsedXML: RSSFeed = parseXML(rawXML);
-
-  console.log(JSON.stringify(parsedXML, null, 2));
+  if (args.length === 0) {
+    throw new Error(`${cmdName} command expects a time_between_reqs argument`);
+  }
+  const time_between_reqs = parseTimeBetweenReqs(args[0].trim());
 }
 
 // Adds a feed to db with current user

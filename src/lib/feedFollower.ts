@@ -1,12 +1,12 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import { Feed } from './feed';
-import { User } from './user';
+import type { Feed } from './feed';
+import type { User } from './user';
 import { feedFollows } from './db/schema/schema';
 import {
-  FeedFollowerJoin,
   insertFeedFollow,
   selectFeedFollower,
-} from './db/queries/feedFollow';
+} from './db/queries/queryFeedFollow';
+import type { FeedFollowerJoin } from './db/queries/queryFeedFollow';
 
 export type FeedFollow = InferSelectModel<typeof feedFollows>;
 
