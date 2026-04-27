@@ -1,4 +1,4 @@
-# Boot.dev Blog Aggregator
+# Boot.dev Blog Aggregator (Gator)
 
 ## Reference
 

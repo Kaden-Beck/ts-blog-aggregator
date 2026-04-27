@@ -15,6 +15,17 @@ export interface FeedFollowerJoin {
   username: string;
 }
 
+export async function selectFeedFollowByUserAndFeed(
+  userId: string,
+  feedId: string,
+): Promise<FeedFollow | undefined> {
+  const [result] = await db
+    .select()
+    .from(feedFollows)
+    .where(and(eq(feedFollows.userId, userId), eq(feedFollows.feedId, feedId)));
+  return result;
+}
+
 export async function insertFeedFollow(
   userId: string,
   feedId: string,

@@ -16,6 +16,7 @@ import {
   handlerFollowFeed,
   handlerFollowing,
   handlerUnfollow,
+  handlerBrowse
 } from './commands';
 
 type Commands = Array<
@@ -37,6 +38,7 @@ const commands: Commands = [
   ['follow', handlerFollowFeed, true],
   ['following', handlerFollowing, true],
   ['unfollow', handlerUnfollow, true],
+  ['browse', handlerBrowse, true],
 ];
 
 function buildCommandRegistry(commands: Commands): CommandsRegistry {

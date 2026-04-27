@@ -55,7 +55,7 @@ export const posts = pgTable('posts', {
     .notNull()
     .defaultNow()
     .$onUpdate(() => new Date()),
-  title: text('title').notNull(),
+  title: text('title'),
   url: text('url').notNull().unique(),
   description: text('description'),
   publishedAt: timestamp('published_at'),

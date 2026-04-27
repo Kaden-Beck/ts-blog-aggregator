@@ -13,6 +13,7 @@ import { aggregate } from './lib/aggregate';
 
 import type { User } from './lib/user';
 import type { Feed } from './lib/feed';
+import { getPostsForUser } from './lib/db/queries/queryPosts';
 
 export type CommandHandler = (
   cmdName: string,
@@ -241,4 +242,19 @@ export async function handlerUnfollow(
   if (result) {
     console.log(`User ${user.name} succesfully unfollowed ${result[1].name}.`);
   }
+}
+
+export async function handlerBrowse(
+  cmdName: string,
+  user: User,
+  ..._args: string[]
+): Promise<void> {
+  let limit: number = 2;
+
+  if (_args.length > 0 && !isNaN(Number(_args[0].trim()))) {
+    limit = Number(_args[0].trim());
+  }
+
+  const result = await getPostsForUser
+  (user, limit);
 }

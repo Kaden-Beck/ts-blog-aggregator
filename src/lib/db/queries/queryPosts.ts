@@ -24,13 +24,13 @@ export async function createPost(postData: InsertPost) {
   return result;
 }
 
-export async function getPostsForUser(user: User, limit?: number) {
+export async function getPostsForUser(user: User, limit: number) {
   const result = await db
     .select()
     .from(posts)
     .innerJoin(feedFollows, eq(posts.feedId, feedFollows.feedId))
     .where(eq(feedFollows.userId, user.id))
     .orderBy(posts.publishedAt)
-    .limit(limit ?? 20);
+    .limit(limit ?? 2);
   return result;
 }

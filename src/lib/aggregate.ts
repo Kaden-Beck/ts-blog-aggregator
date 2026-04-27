@@ -1,9 +1,22 @@
 import { getNextFeedToFetch, markFeedFetched } from './db/queries/queryFeeds';
+import { createPost } from './db/queries/queryPosts';
 import { getUserById } from './db/queries/queryUsers';
 import type { Feed } from './feed';
 import { fetchRSSFeed, parseXML } from './rss';
-import type { RSSItem } from './rss';
+import type { RSSFeed, RSSItem } from './rss';
+import { InsertPost } from './db/queries/queryPosts';
 import { handleError } from './utils';
+
+// Automating scraper and aggregator
+
+function formatDuration(ms: number): string {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return `${h}h${m}m${s}s`;
+  if (m > 0) return `${m}m${s}s`;
+  return `${s}s`;
+}
 
 export function parseTimeBetweenReqs(durationStr: string): number {
   const regex = /^(\d+)(ms|s|m|h)$/;
@@ -30,48 +43,9 @@ export function parseTimeBetweenReqs(durationStr: string): number {
   }
 }
 
-function formatDuration(ms: number): string {
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  if (h > 0) return `${h}h${m}m${s}s`;
-  if (m > 0) return `${m}m${s}s`;
-  return `${s}s`;
-}
-
-export async function scrapeFeeds() {
-  // Get the next feed to fetch from the DB,
-  const nextFeed: Feed = await getNextFeedToFetch();
-  if (!nextFeed) {
-    console.error(`Wasn't able to retrieve next feed to fetch`);
-    return;
-  }
-
-  // Fetch the feed using the URL (we already wrote this function)
-  const fetchResult = await fetchRSSFeed(nextFeed.url);
-  if (!fetchResult) {
-    console.error(
-      `Unable to fetch the next RSS Feed (${nextFeed.name}) from the URL provided )${nextFeed.url}`,
-    );
-    return;
-  }
-
-  const items: RSSItem[] = parseXML(fetchResult).channel.item;
-  // Mark Feed as fetched
-  const update = await markFeedFetched(nextFeed);
-  if (!update) {
-    console.log(
-      `Unable to update fetch data for ${nextFeed.name}. Continuing.`,
-    );
-  }
-
-  // Iterate over the items in the feed and print their titles to the console.
-  for (const item of items) {
-    console.log(item.title);
-  }
-}
-
+// Aggregate Function: Accepts a duration string argument, parses it
 export async function aggregate(durationStr: string): Promise<void> {
+  // Parse duration string
   const timeBetweenRequests = parseTimeBetweenReqs(durationStr);
   console.log(`Collecting feeds every ${formatDuration(timeBetweenRequests)}`);
 
@@ -88,4 +62,46 @@ export async function aggregate(durationStr: string): Promise<void> {
       resolve();
     });
   });
+}
+
+// Scraping Logic
+async function getNextFeed(): Promise<Feed> {
+  const nextFeed: Feed = await getNextFeedToFetch();
+  if (!nextFeed) {
+    throw new Error(`Wasn't able to retrieve next feed to fetch`);
+  }
+  return nextFeed;
+}
+
+async function upsertPosts(rssItems: RSSItem[], feedData: Feed) {
+  // Iterate over the items in the feed and insert them into the database.
+  for (const item of rssItems) {
+    const postData: InsertPost = {
+      url: item.link,
+      feedId: feedData.id,
+      title: item.title,
+      description: item.description,
+      publishedAt: new Date(item.pubDate),
+    };
+    const result = await createPost(postData);
+  }
+}
+
+export async function scrapeFeeds() {
+  // Get the next feed to fetch from the DB
+  const _feed = await getNextFeed();
+
+  // Fetch the feed using the URL (we already wrote this function)
+  const rssString = await fetchRSSFeed(_feed.url);
+  if (!rssString) {
+    throw new Error(
+      `Unable to fetch the next RSS Feed (${_feed.name}) from the URL provided )${_feed.url}`,
+    );
+  }
+
+  // Mark Feed as fetched
+  await markFeedFetched(_feed).catch(handleError);
+
+  // Attempt to insert feed if non existing (upsert)
+  await upsertPosts(parseXML(rssString).channel.item, _feed).catch(handleError);
 }

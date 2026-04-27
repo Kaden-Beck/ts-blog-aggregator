@@ -5,6 +5,7 @@ import { feedFollows } from './db/schema/schema';
 import {
   insertFeedFollow,
   selectFeedFollower,
+  selectFeedFollowByUserAndFeed,
 } from './db/queries/queryFeedFollow';
 import type { FeedFollowerJoin } from './db/queries/queryFeedFollow';
 
@@ -14,23 +15,13 @@ export async function createFeedFollow(
   feed: Feed,
   follower: User,
 ): Promise<FeedFollowerJoin | null> {
-  try {
-    const feedFollower: FeedFollow = await insertFeedFollow(
-      follower.id,
-      feed.id,
-    );
-
-    const feedFollowerJoin: FeedFollowerJoin = await selectFeedFollower(
-      feedFollower.id,
-    );
-
-    return feedFollowerJoin;
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error(
-        `There was an error with attempting to follow that feed: ${err.message}`,
-      );
-    }
+  const existing = await selectFeedFollowByUserAndFeed(follower.id, feed.id);
+  if (existing) {
+    console.log(`You are already following ${feed.name}.`);
     return null;
   }
+
+  const feedFollower: FeedFollow = await insertFeedFollow(follower.id, feed.id);
+  const feedFollowerJoin: FeedFollowerJoin = await selectFeedFollower(feedFollower.id);
+  return feedFollowerJoin;
 }
