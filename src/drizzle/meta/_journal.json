@@ -29,6 +29,20 @@
       "when": 1777243435767,
       "tag": "0003_young_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777269503513,
+      "tag": "0004_giant_microbe",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777270051519,
+      "tag": "0005_square_madripoor",
+      "breakpoints": true
     }
   ]
 }

@@ -5,13 +5,14 @@ import {
   selectFollowsByUser,
 } from './lib/db/queries/queryFeedFollow';
 import { getCurrentUser, getUsers } from './lib/db/queries/queryUsers';
-
 import { addFeed, printFeed, printFeeds } from './lib/feed';
-import type { Feed } from './lib/feed';
+import { fetchRSSFeed, parseXML } from './lib/rss';
 import { clearUsers, loginUser, registerUser } from './lib/user';
-import type { User } from './lib/user';
 import { createFeedFollow } from './lib/feedFollower';
-import { parseTimeBetweenReqs } from './lib/aggregate';
+import { aggregate } from './lib/aggregate';
+
+import type { User } from './lib/user';
+import type { Feed } from './lib/feed';
 
 export type CommandHandler = (
   cmdName: string,
@@ -143,7 +144,8 @@ export async function handlerAgg(
   if (args.length === 0) {
     throw new Error(`${cmdName} command expects a time_between_reqs argument`);
   }
-  const time_between_reqs = parseTimeBetweenReqs(args[0].trim());
+
+  await aggregate(args[0].trim());
 }
 
 // Adds a feed to db with current user
@@ -193,12 +195,19 @@ export async function handlerFollowFeed(
     throw new Error(`${cmdName} command expects a url argument`);
   }
 
-  const feed = await getFeedByURL(args[0].trim());
-  if (feed) {
-    await createFeedFollow(feed, user);
-  } else {
-    console.log('There was an unknown error while following that feed!');
+  const url = args[0].trim();
+  const existing = await getFeedByURL(url);
+  if (existing) {
+    await createFeedFollow(existing, user);
+    return;
   }
+
+  const rssData = await fetchRSSFeed(url);
+  if (!rssData) {
+    throw new Error(`Could not fetch RSS feed at: ${url}`);
+  }
+  const name = parseXML(rssData).channel.title;
+  await addFeed(name, url, user);
 }
 
 // Handles retrieving a current user's followed feeds

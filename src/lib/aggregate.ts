@@ -3,14 +3,40 @@ import { getUserById } from './db/queries/queryUsers';
 import type { Feed } from './feed';
 import { fetchRSSFeed, parseXML } from './rss';
 import type { RSSItem } from './rss';
+import { handleError } from './utils';
 
-export function parseTimeBetweenReqs(durationStr: string) {
+export function parseTimeBetweenReqs(durationStr: string): number {
   const regex = /^(\d+)(ms|s|m|h)$/;
   const match = durationStr.match(regex);
 
-  if (match) {
-    console.log(`Collecting feeds every ${match[0]}${match[1]}`);
+  if (!match) {
+    throw new Error(
+      `Invalid duration string: "${durationStr}". Expected format like 1s, 1m, 1h`,
+    );
   }
+
+  const value = parseInt(match[1], 10);
+  switch (match[2]) {
+    case 'ms':
+      return value;
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    default:
+      throw new Error(`Unknown unit: ${match[2]}`);
+  }
+}
+
+function formatDuration(ms: number): string {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return `${h}h${m}m${s}s`;
+  if (m > 0) return `${m}m${s}s`;
+  return `${s}s`;
 }
 
 export async function scrapeFeeds() {
@@ -29,7 +55,6 @@ export async function scrapeFeeds() {
     );
     return;
   }
-  const feedUser = await getUserById(nextFeed.userId);
 
   const items: RSSItem[] = parseXML(fetchResult).channel.item;
   // Mark Feed as fetched
@@ -44,4 +69,23 @@ export async function scrapeFeeds() {
   for (const item of items) {
     console.log(item.title);
   }
+}
+
+export async function aggregate(durationStr: string): Promise<void> {
+  const timeBetweenRequests = parseTimeBetweenReqs(durationStr);
+  console.log(`Collecting feeds every ${formatDuration(timeBetweenRequests)}`);
+
+  scrapeFeeds().catch(handleError);
+
+  const interval = setInterval(() => {
+    scrapeFeeds().catch(handleError);
+  }, timeBetweenRequests);
+
+  await new Promise<void>((resolve) => {
+    process.on('SIGINT', () => {
+      clearInterval(interval);
+      console.log('\nStopping feed aggregation.');
+      resolve();
+    });
+  });
 }
